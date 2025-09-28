@@ -312,6 +312,9 @@ class EnhancedSearchEngine:
 
     def _parallel_search(self, board: chess.Board, depth: int, time_limit: float | None = None) -> SearchResult:
         """Use parallel search for better performance"""
+        if self.parallel_search is None:
+            return self._sequential_search(board, depth, time_limit)
+
         try:
             best_move, best_score, total_nodes, depth_reached = self.parallel_search.search(
                 board, depth, time_limit
