@@ -18,6 +18,7 @@ import chess.engine
 from bitboard import BitboardMoveGenerator
 from nnue import HybridEvaluator
 from opening_book import EnhancedOpeningBook
+from polyglot_book import MultiBook
 from parallel_search import IterativeDeepeningParallel
 
 
@@ -745,16 +746,31 @@ class EnhancedUCIEngine:
         self.search_thread = None
         self.running = True
 
-        # Initialize opening book
+        # Initialize opening book with Polyglot books
         book_paths = []
         # Look for book files in the books directory
         books_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "books")
         if os.path.exists(books_dir):
-            book_paths.extend(
-                os.path.join(books_dir, file) for file in os.listdir(books_dir) if file.endswith((".bin", ".txt"))
-            )
+            # Prioritize the best books
+            priority_books = [
+                "DefaultBook.bin", "Book.bin", "Book2.bin", "Book3.bin",
+                "main.bin", "perfect_book.bin", "sfbook.bin", "Titans.bin"
+            ]
+            
+            # Add priority books first
+            for book_name in priority_books:
+                book_path = os.path.join(books_dir, book_name)
+                if os.path.exists(book_path):
+                    book_paths.append(book_path)
+            
+            # Add remaining books
+            for file in os.listdir(books_dir):
+                if file.endswith(".bin") and file not in priority_books:
+                    book_paths.append(os.path.join(books_dir, file))
 
-        self.opening_book = EnhancedOpeningBook(book_paths)
+        # Use Polyglot books for better opening play
+        self.polyglot_book = MultiBook(book_paths)
+        self.opening_book = EnhancedOpeningBook(book_paths)  # Keep as fallback
 
         # UCI options
         self.options = {
@@ -906,24 +922,29 @@ class EnhancedUCIEngine:
             print("bestmove 0000")
 
     def _get_opening_move(self) -> chess.Move | None:
-        """Enhanced opening book"""
-        # Use opening book for first 10 moves
-        if len(self.board.move_stack) > 10:
+        """Enhanced opening book with best move selection"""
+        # Use opening books for first 15 moves
+        if len(self.board.move_stack) > 15:
             return None
 
-        # Try to get move from opening book
+        # Try Polyglot opening books first (best move selection)
+        move = self.polyglot_book.get_best_move(self.board)
+        if move and self.board.is_legal(move):
+            return move
+        
+        # Fallback to enhanced opening book
         move = self.opening_book.get_move(self.board)
         if move and self.board.is_legal(move):
             return move
 
-        # Fallback to simple opening moves
-        opening_moves = ["e2e4", "d2d4", "g1f3", "c2c4", "b1c3", "f2f4", "g2g3", "b2b3"]
+        # Fallback to simple opening moves for very early game
+        if len(self.board.move_stack) < 3:
+            opening_moves = ["e2e4", "d2d4", "g1f3", "c2c4", "b1c3", "f2f4", "g2g3", "b2b3"]
+            legal_moves = [move.uci() for move in self.board.legal_moves]
+            available_openings = [move for move in opening_moves if move in legal_moves]
 
-        legal_moves = [move.uci() for move in self.board.legal_moves]
-        available_openings = [move for move in opening_moves if move in legal_moves]
-
-        if available_openings:
-            return chess.Move.from_uci(random.choice(available_openings))
+            if available_openings:
+                return chess.Move.from_uci(random.choice(available_openings))
 
         return None
 
