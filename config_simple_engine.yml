@@ -1,0 +1,95 @@
+# Simple Engine Configuration for Testing (No Dependencies Required)
+# Use this when dependencies aren't installed
+
+token: "YOUR_LICHESS_TOKEN_HERE"
+
+engines:
+  # Simple engine for testing without dependencies
+  simple:
+    dir: "./engines"
+    name: "simple_homemade_engine"
+    ponder: false
+    silence_stderr: false
+    move_overhead_multiplier: 1.0
+    uci_options:
+      Threads: 1
+      Hash: 16
+      Depth: 1
+      Time: 1000
+    limits:
+      time: 2.0
+      depth: 3
+      nodes: 1000
+
+  # Enhanced engine (requires dependencies)
+  enhanced:
+    dir: "./engines"
+    name: "enhanced_homemade_engine"
+    ponder: true
+    silence_stderr: false
+    move_overhead_multiplier: 1.0
+    uci_options:
+      Threads: 4
+      Hash: 128
+      UseNNUE: true
+      UseParallel: true
+      Depth: 8
+      Time: 3000
+    limits:
+      time: 5.0
+      depth: 15
+      nodes: 1000000
+
+# Use simple engine as default
+standard:
+  dir: "./engines"
+  name: "simple_homemade_engine"
+  ponder: false
+  silence_stderr: false
+  move_overhead_multiplier: 1.0
+  uci_options:
+    Threads: 1
+    Hash: 16
+    Depth: 1
+    Time: 1000
+  limits:
+    time: 2.0
+    depth: 3
+    nodes: 1000
+
+# Challenge settings
+challenge:
+  concurrency: 1
+  max_takebacks: 3
+  bullet_with_increment_only: false
+  variants:
+    - standard
+  time_controls:
+    - bullet
+    - blitz
+  bot_modes:
+    - rated
+  human_modes:
+    - casual
+    - rated
+
+# Matchmaking
+matchmaking:
+  delay: 10
+  timeout: 30
+  selection: weighted_random
+  types:
+    bullet:
+      tc: 1+1
+
+# Messages
+messages:
+  greeting: "Hey! I'm running a simple homemade chess engine for testing. Good luck!"
+  goodbye: "Good game! Thanks for playing."
+  greeting_spectators: "Welcome! I'm running a simple homemade engine."
+  goodbye_spectators: "Thanks for watching!"
+
+# User lists
+whitelist: []
+blacklist: []
+online_blacklists: []
