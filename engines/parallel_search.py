@@ -343,7 +343,10 @@ class ParallelSearchEngine:
             return best_result.best_move, best_result.score, self.total_nodes
         # Fallback to first legal move
         legal_moves = list(board.legal_moves)
-        return legal_moves[0] if legal_moves else None, 0, 0
+        if legal_moves:
+            return legal_moves[0], 0, 0
+        # Return a pass move if no legal moves (shouldn't happen in normal chess)
+        return chess.Move.null(), 0, 0
 
     def stop(self):
         """Stop the search"""
@@ -368,7 +371,7 @@ class IterativeDeepeningParallel:
                time_limit: float | None = None) -> tuple[chess.Move, int, int, int]:
         """Iterative deepening search with parallel threads"""
         start_time = time.time()
-        best_move = None
+        best_move = chess.Move.null()  # Initialize with null move
         best_score = 0
         total_nodes = 0
         depth_reached = 0
