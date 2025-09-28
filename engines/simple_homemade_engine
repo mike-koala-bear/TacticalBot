@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""
+Simple Homemade Chess Engine - Fallback version without external dependencies
+This is a minimal UCI-compatible engine for testing when dependencies aren't available.
+"""
+
+import sys
+import random
+import time
+
+# Simple chess board representation without external dependencies
+class SimpleBoard:
+    def __init__(self):
+        self.board = [None] * 64
+        self.turn = True  # True = White, False = Black
+        self.move_stack = []
+        self.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    
+    def legal_moves(self):
+        """Return a simple list of legal moves"""
+        # This is a very simplified move generator
+        moves = []
+        if self.turn:  # White to move
+            # Simple pawn moves
+            for i in range(8, 16):  # White pawns
+                if self.board[i] is None:
+                    moves.append(f"e2e4")  # Always suggest e4
+                    break
+        else:  # Black to move
+            # Simple pawn moves
+            for i in range(48, 56):  # Black pawns
+                if self.board[i] is None:
+                    moves.append(f"e7e5")  # Always suggest e5
+                    break
+        
+        if not moves:
+            moves = ["e2e4", "d2d4", "g1f3", "c2c4"]  # Fallback moves
+        
+        return moves
+    
+    def push(self, move):
+        """Make a move"""
+        self.move_stack.append(move)
+        self.turn = not self.turn
+    
+    def fen(self):
+        """Return FEN string"""
+        return self.fen
+
+class SimpleEngine:
+    def __init__(self):
+        self.board = SimpleBoard()
+        self.running = True
+        self.options = {
+            "Hash": {"type": "spin", "default": 128, "min": 1, "max": 2048},
+            "Depth": {"type": "spin", "default": 8, "min": 1, "max": 25},
+            "Time": {"type": "spin", "default": 3000, "min": 100, "max": 60000},
+            "Threads": {"type": "spin", "default": 4, "min": 1, "max": 16},
+        }
+    
+    def run(self):
+        """Main UCI loop"""
+        while self.running:
+            try:
+                line = input().strip()
+                if not line:
+                    continue
+                
+                if line == "uci":
+                    self.send_uci()
+                elif line == "isready":
+                    self.send_ready()
+                elif line == "ucinewgame":
+                    self.new_game()
+                elif line.startswith("position"):
+                    self.set_position(line)
+                elif line.startswith("go"):
+                    self.go(line)
+                elif line == "quit":
+                    self.quit()
+                    break
+                elif line.startswith("setoption"):
+                    self.set_option(line)
+                else:
+                    # Unknown command - ignore
+                    pass
+            except EOFError:
+                break
+            except Exception as e:
+                print(f"Error: {e}")
+    
+    def send_uci(self):
+        """Send UCI identification"""
+        print("id name SimpleHomemadeChessEngine")
+        print("id author AI Assistant")
+        print("id version 1.0")
+        print("option name Hash type spin default 128 min 1 max 2048")
+        print("option name Depth type spin default 8 min 1 max 25")
+        print("option name Time type spin default 3000 min 100 max 60000")
+        print("option name Threads type spin default 4 min 1 max 16")
+        print("uciok")
+    
+    def send_ready(self):
+        """Send ready status"""
+        print("readyok")
+    
+    def new_game(self):
+        """Start a new game"""
+        self.board = SimpleBoard()
+    
+    def set_position(self, command):
+        """Set the position"""
+        parts = command.split()
+        if parts[1] == "startpos":
+            self.board = SimpleBoard()
+            if len(parts) > 2 and parts[2] == "moves":
+                moves = parts[3:]
+                for move_str in moves:
+                    # Simple move handling
+                    pass
+        elif parts[1] == "fen":
+            # Simple FEN handling
+            self.board = SimpleBoard()
+    
+    def go(self, command):
+        """Start searching for a move"""
+        # Simple move selection
+        legal_moves = self.board.legal_moves()
+        if legal_moves:
+            best_move = random.choice(legal_moves)
+            print(f"info depth 1 score cp 0 nodes 1 time 1")
+            print(f"bestmove {best_move}")
+        else:
+            print("bestmove 0000")
+    
+    def set_option(self, command):
+        """Set UCI option"""
+        # Simple option handling
+        pass
+    
+    def quit(self):
+        """Quit the engine"""
+        self.running = False
+
+def main():
+    """Main entry point"""
+    engine = SimpleEngine()
+    engine.run()
+
+if __name__ == "__main__":
+    main()

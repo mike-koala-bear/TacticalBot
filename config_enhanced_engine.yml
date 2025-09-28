@@ -1,0 +1,261 @@
+# Enhanced Homemade Chess Engine Configuration for Tactical Bot
+# Copy this to config.yml to use the enhanced homemade engine
+
+token: "YOUR_LICHESS_TOKEN_HERE"
+
+engines:
+  # Enhanced Homemade Engine - Main engine for all games
+  enhanced_homemade:
+    dir: "./engines"
+    name: "enhanced_homemade_engine"
+    ponder: true
+    silence_stderr: false
+    move_overhead_multiplier: 1.0
+    uci_options:
+      Threads: 4                    # Number of CPU threads
+      Hash: 128                     # Hash table size in MB
+      UseNNUE: true                 # Enable NNUE evaluation
+      UseParallel: true             # Enable parallel search
+      Depth: 8                      # Default search depth
+      Time: 3000                    # Default time per move (ms)
+    limits:
+      time: 5.0                     # Max time per move in seconds
+      depth: 15                     # Max search depth
+      nodes: 1000000                # Max nodes per move
+
+  # Fast engine for bullet games
+  enhanced_homemade_bullet:
+    dir: "./engines"
+    name: "enhanced_homemade_engine"
+    ponder: true
+    silence_stderr: false
+    move_overhead_multiplier: 1.0
+    uci_options:
+      Threads: 2
+      Hash: 64
+      UseNNUE: true
+      UseParallel: true
+      Depth: 6
+      Time: 1000
+    limits:
+      time: 2.0
+      depth: 10
+      nodes: 500000
+
+  # Strong engine for classical games
+  enhanced_homemade_classical:
+    dir: "./engines"
+    name: "enhanced_homemade_engine"
+    ponder: true
+    silence_stderr: false
+    move_overhead_multiplier: 1.0
+    uci_options:
+      Threads: 8
+      Hash: 512
+      UseNNUE: true
+      UseParallel: true
+      Depth: 12
+      Time: 10000
+    limits:
+      time: 30.0
+      depth: 20
+      nodes: 5000000
+
+# Use different engines for different time controls
+bullet:
+  dir: "./engines"
+  name: "enhanced_homemade_engine"
+  ponder: true
+  silence_stderr: false
+  move_overhead_multiplier: 1.0
+  uci_options:
+    Threads: 2
+    Hash: 64
+    UseNNUE: true
+    UseParallel: true
+    Depth: 6
+    Time: 1000
+  limits:
+    time: 2.0
+    depth: 10
+    nodes: 500000
+
+blitz:
+  dir: "./engines"
+  name: "enhanced_homemade_engine"
+  ponder: true
+  silence_stderr: false
+  move_overhead_multiplier: 1.0
+  uci_options:
+    Threads: 4
+    Hash: 128
+    UseNNUE: true
+    UseParallel: true
+    Depth: 8
+    Time: 3000
+  limits:
+    time: 5.0
+    depth: 15
+    nodes: 1000000
+
+rapid:
+  dir: "./engines"
+  name: "enhanced_homemade_engine"
+  ponder: true
+  silence_stderr: false
+  move_overhead_multiplier: 1.0
+  uci_options:
+    Threads: 6
+    Hash: 256
+    UseNNUE: true
+    UseParallel: true
+    Depth: 10
+    Time: 5000
+  limits:
+    time: 10.0
+    depth: 18
+    nodes: 2000000
+
+classical:
+  dir: "./engines"
+  name: "enhanced_homemade_engine"
+  ponder: true
+  silence_stderr: false
+  move_overhead_multiplier: 1.0
+  uci_options:
+    Threads: 8
+    Hash: 512
+    UseNNUE: true
+    UseParallel: true
+    Depth: 12
+    Time: 10000
+  limits:
+    time: 30.0
+    depth: 20
+    nodes: 5000000
+
+# Syzygy endgame tablebases (optional)
+syzygy:
+  standard:
+    enabled: false
+    paths: []
+    max_pieces: 7
+    instant_play: true
+
+# Opening books (using the existing books directory)
+opening_books:
+  enabled: true
+  priority: 400
+  books:
+    standard:
+      selection: weighted_random
+      names:
+        - DefaultBook
+        - Book
+        - Book2
+        - Book3
+
+# Online moves (optional)
+online_moves:
+  opening_explorer:
+    enabled: false
+    priority: 300
+    only_without_book: false
+    use_for_variants: false
+    allow_repetitions: false
+    min_time: 10
+    timeout: 5
+    min_games: 5
+    only_with_wins: false
+    selection: "performance"
+    anti: false
+  lichess_cloud:
+    enabled: false
+    priority: 200
+    only_without_book: false
+    use_for_variants: false
+    allow_repetitions: false
+    trust_eval: false
+    min_eval_depth: 10
+    min_time: 10
+    timeout: 5
+  chessdb:
+    enabled: false
+    priority: 100
+    only_without_book: false
+    allow_repetitions: false
+    trust_eval: false
+    min_time: 10
+    timeout: 5
+    best_move: false
+  online_egtb:
+    enabled: false
+    min_time: 5
+    timeout: 3
+
+# Game behavior
+offer_draw:
+  enabled: true
+  score: 10
+  consecutive_moves: 5
+  min_game_length: 30
+  against_humans: true
+
+resign:
+  enabled: false
+  score: -1000
+  consecutive_moves: 5
+  against_humans: true
+
+# Challenge settings
+challenge:
+  concurrency: 1
+  max_takebacks: 3
+  bullet_with_increment_only: false
+  variants:
+    - standard
+    - chess960
+  time_controls:
+    - bullet
+    - blitz
+    - rapid
+    - classical
+  bot_modes:
+    - rated
+  human_modes:
+    - casual
+    - rated
+
+# Matchmaking
+matchmaking:
+  delay: 10
+  timeout: 30
+  selection: weighted_random
+  types:
+    bullet:
+      tc: 1+1
+    blitz:
+      tc: 3+2
+    rapid:
+      tc: 10+0
+    classical:
+      tc: 30+0
+
+# Messages
+messages:
+  greeting: "Hey! I'm running the Enhanced Homemade Chess Engine with NNUE, bitboards, and parallel search. Good luck! Type !help for commands."
+  goodbye: "Good game! Thanks for playing against my enhanced engine."
+  greeting_spectators: "Welcome! I'm running the Enhanced Homemade Chess Engine. Type !help for commands."
+  goodbye_spectators: "Thanks for watching!"
+
+# User lists
+whitelist: []
+blacklist: []
+online_blacklists: []
+
+# Books configuration
+books:
+  DefaultBook: "./books/DefaultBook.bin"
+  Book: "./books/Book.bin"
+  Book2: "./books/Book2.bin"
+  Book3: "./books/Book3.bin"
