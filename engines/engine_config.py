@@ -4,30 +4,30 @@ Configuration file for the homemade chess engine
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Any
 
 
 @dataclass
 class EngineConfig:
     """Configuration for the homemade chess engine"""
-    
+
     # Search parameters
     max_depth: int = 6
     max_time_ms: int = 1000
     hash_size: int = 32
-    
+
     # Evaluation parameters
-    material_values: Dict[int, int] = None
+    material_values: dict[int, int] | None = None
     positional_bonus: bool = True
     mobility_bonus: int = 10
-    
+
     # Opening book
     use_opening_book: bool = True
     opening_depth: int = 6
-    
+
     # UCI options
-    uci_options: Dict[str, Dict[str, Any]] = None
-    
+    uci_options: dict[str, dict[str, Any]] | None = None
+
     def __post_init__(self):
         if self.material_values is None:
             self.material_values = {
@@ -38,7 +38,7 @@ class EngineConfig:
                 5: 900,   # Queen
                 6: 20000  # King
             }
-        
+
         if self.uci_options is None:
             self.uci_options = {
                 'Hash': {
