@@ -24,6 +24,7 @@ from parallel_search import IterativeDeepeningParallel
 @dataclass
 class SearchResult:
     """Result of a search operation"""
+
     best_move: chess.Move | None
     score: int
     depth: int
@@ -51,74 +52,410 @@ class EnhancedPositionEvaluator:
             chess.BISHOP: 330,
             chess.ROOK: 500,
             chess.QUEEN: 900,
-            chess.KING: 20000
+            chess.KING: 20000,
         }
 
         # Enhanced piece-square tables
         self.PAWN_TABLE = [
-            0,  0,  0,  0,  0,  0,  0,  0,
-            50, 50, 50, 50, 50, 50, 50, 50,
-            10, 10, 20, 30, 30, 20, 10, 10,
-            5,  5, 10, 25, 25, 10,  5,  5,
-            0,  0,  0, 20, 20,  0,  0,  0,
-            5, -5,-10,  0,  0,-10, -5,  5,
-            5, 10, 10,-20,-20, 10, 10,  5,
-            0,  0,  0,  0,  0,  0,  0,  0
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            50,
+            10,
+            10,
+            20,
+            30,
+            30,
+            20,
+            10,
+            10,
+            5,
+            5,
+            10,
+            25,
+            25,
+            10,
+            5,
+            5,
+            0,
+            0,
+            0,
+            20,
+            20,
+            0,
+            0,
+            0,
+            5,
+            -5,
+            -10,
+            0,
+            0,
+            -10,
+            -5,
+            5,
+            5,
+            10,
+            10,
+            -20,
+            -20,
+            10,
+            10,
+            5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
         ]
 
         self.KNIGHT_TABLE = [
-            -50,-40,-30,-30,-30,-30,-40,-50,
-            -40,-20,  0,  0,  0,  0,-20,-40,
-            -30,  0, 10, 15, 15, 10,  0,-30,
-            -30,  5, 15, 20, 20, 15,  5,-30,
-            -30,  0, 15, 20, 20, 15,  0,-30,
-            -30,  5, 10, 15, 15, 10,  5,-30,
-            -40,-20,  0,  5,  5,  0,-20,-40,
-            -50,-40,-30,-30,-30,-30,-40,-50
+            -50,
+            -40,
+            -30,
+            -30,
+            -30,
+            -30,
+            -40,
+            -50,
+            -40,
+            -20,
+            0,
+            0,
+            0,
+            0,
+            -20,
+            -40,
+            -30,
+            0,
+            10,
+            15,
+            15,
+            10,
+            0,
+            -30,
+            -30,
+            5,
+            15,
+            20,
+            20,
+            15,
+            5,
+            -30,
+            -30,
+            0,
+            15,
+            20,
+            20,
+            15,
+            0,
+            -30,
+            -30,
+            5,
+            10,
+            15,
+            15,
+            10,
+            5,
+            -30,
+            -40,
+            -20,
+            0,
+            5,
+            5,
+            0,
+            -20,
+            -40,
+            -50,
+            -40,
+            -30,
+            -30,
+            -30,
+            -30,
+            -40,
+            -50,
         ]
 
         self.BISHOP_TABLE = [
-            -20,-10,-10,-10,-10,-10,-10,-20,
-            -10,  0,  0,  0,  0,  0,  0,-10,
-            -10,  0,  5, 10, 10,  5,  0,-10,
-            -10,  5,  5, 10, 10,  5,  5,-10,
-            -10,  0, 10, 10, 10, 10,  0,-10,
-            -10, 10, 10, 10, 10, 10, 10,-10,
-            -10,  5,  0,  0,  0,  0,  5,-10,
-            -20,-10,-10,-10,-10,-10,-10,-20
+            -20,
+            -10,
+            -10,
+            -10,
+            -10,
+            -10,
+            -10,
+            -20,
+            -10,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -10,
+            -10,
+            0,
+            5,
+            10,
+            10,
+            5,
+            0,
+            -10,
+            -10,
+            5,
+            5,
+            10,
+            10,
+            5,
+            5,
+            -10,
+            -10,
+            0,
+            10,
+            10,
+            10,
+            10,
+            0,
+            -10,
+            -10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            -10,
+            -10,
+            5,
+            0,
+            0,
+            0,
+            0,
+            5,
+            -10,
+            -20,
+            -10,
+            -10,
+            -10,
+            -10,
+            -10,
+            -10,
+            -20,
         ]
 
         self.ROOK_TABLE = [
-            0,  0,  0,  0,  0,  0,  0,  0,
-            5, 10, 10, 10, 10, 10, 10,  5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            0,  0,  0,  5,  5,  0,  0,  0
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            5,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            5,
+            -5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -5,
+            -5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -5,
+            -5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -5,
+            -5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -5,
+            -5,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -5,
+            0,
+            0,
+            0,
+            5,
+            5,
+            0,
+            0,
+            0,
         ]
 
         self.QUEEN_TABLE = [
-            -20,-10,-10, -5, -5,-10,-10,-20,
-            -10,  0,  0,  0,  0,  0,  0,-10,
-            -10,  0,  5,  5,  5,  5,  0,-10,
-            -5,  0,  5,  5,  5,  5,  0, -5,
-            0,  0,  5,  5,  5,  5,  0, -5,
-            -10,  5,  5,  5,  5,  5,  0,-10,
-            -10,  0,  5,  0,  0,  0,  0,-10,
-            -20,-10,-10, -5, -5,-10,-10,-20
+            -20,
+            -10,
+            -10,
+            -5,
+            -5,
+            -10,
+            -10,
+            -20,
+            -10,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -10,
+            -10,
+            0,
+            5,
+            5,
+            5,
+            5,
+            0,
+            -10,
+            -5,
+            0,
+            5,
+            5,
+            5,
+            5,
+            0,
+            -5,
+            0,
+            0,
+            5,
+            5,
+            5,
+            5,
+            0,
+            -5,
+            -10,
+            5,
+            5,
+            5,
+            5,
+            5,
+            0,
+            -10,
+            -10,
+            0,
+            5,
+            0,
+            0,
+            0,
+            0,
+            -10,
+            -20,
+            -10,
+            -10,
+            -5,
+            -5,
+            -10,
+            -10,
+            -20,
         ]
 
         self.KING_TABLE = [
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -20,-30,-30,-40,-40,-30,-30,-20,
-            -10,-20,-20,-20,-20,-20,-20,-10,
-            20, 20,  0,  0,  0,  0, 20, 20,
-            20, 30, 10,  0,  0, 10, 30, 20
+            -30,
+            -40,
+            -40,
+            -50,
+            -50,
+            -40,
+            -40,
+            -30,
+            -30,
+            -40,
+            -40,
+            -50,
+            -50,
+            -40,
+            -40,
+            -30,
+            -30,
+            -40,
+            -40,
+            -50,
+            -50,
+            -40,
+            -40,
+            -30,
+            -30,
+            -40,
+            -40,
+            -50,
+            -50,
+            -40,
+            -40,
+            -30,
+            -20,
+            -30,
+            -30,
+            -40,
+            -40,
+            -30,
+            -30,
+            -20,
+            -10,
+            -20,
+            -20,
+            -20,
+            -20,
+            -20,
+            -20,
+            -10,
+            20,
+            20,
+            0,
+            0,
+            0,
+            0,
+            20,
+            20,
+            20,
+            30,
+            10,
+            0,
+            0,
+            10,
+            30,
+            20,
         ]
 
         self.tables = {
@@ -127,7 +464,7 @@ class EnhancedPositionEvaluator:
             chess.BISHOP: self.BISHOP_TABLE,
             chess.ROOK: self.ROOK_TABLE,
             chess.QUEEN: self.QUEEN_TABLE,
-            chess.KING: self.KING_TABLE
+            chess.KING: self.KING_TABLE,
         }
 
     def evaluate(self, board: chess.Board) -> int:
@@ -204,8 +541,9 @@ class EnhancedSearchEngine:
         self.killer_moves = {}
         self.history_heuristic = {}
 
-    def search(self, board: chess.Board, depth: int, alpha: int = -30000, beta: int = 30000,
-               maximizing_player: bool = True) -> int:
+    def search(
+        self, board: chess.Board, depth: int, alpha: int = -30000, beta: int = 30000, maximizing_player: bool = True
+    ) -> int:
         """Enhanced minimax search with advanced pruning"""
         self.nodes_searched += 1
 
@@ -216,8 +554,8 @@ class EnhancedSearchEngine:
         board_hash = hash(board.fen())
         if board_hash in self.transposition_table:
             tt_entry = self.transposition_table[board_hash]
-            if tt_entry['depth'] >= depth:
-                return tt_entry['score']
+            if tt_entry["depth"] >= depth:
+                return tt_entry["score"]
 
         legal_moves = list(board.legal_moves)
         if not legal_moves:
@@ -243,7 +581,7 @@ class EnhancedSearchEngine:
                         if len(self.killer_moves[depth]) > 2:
                             self.killer_moves[depth].pop()
                     break  # Beta cutoff
-            self.transposition_table[board_hash] = {'score': max_eval, 'depth': depth}
+            self.transposition_table[board_hash] = {"score": max_eval, "depth": depth}
             return max_eval
         min_eval = 30000
         for move in ordered_moves:
@@ -261,7 +599,7 @@ class EnhancedSearchEngine:
                     if len(self.killer_moves[depth]) > 2:
                         self.killer_moves[depth].pop()
                 break  # Alpha cutoff
-        self.transposition_table[board_hash] = {'score': min_eval, 'depth': depth}
+        self.transposition_table[board_hash] = {"score": min_eval, "depth": depth}
         return min_eval
 
     def _order_moves(self, board: chess.Board, moves: list[chess.Move], depth: int) -> list[chess.Move]:
@@ -278,8 +616,12 @@ class EnhancedSearchEngine:
 
                 if captured_piece and moving_piece:
                     piece_values = {
-                        chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3,
-                        chess.ROOK: 5, chess.QUEEN: 9, chess.KING: 100
+                        chess.PAWN: 1,
+                        chess.KNIGHT: 3,
+                        chess.BISHOP: 3,
+                        chess.ROOK: 5,
+                        chess.QUEEN: 9,
+                        chess.KING: 100,
                     }
                     score += piece_values[captured_piece.piece_type] * 1000
                     score -= piece_values[moving_piece.piece_type]
@@ -316,9 +658,7 @@ class EnhancedSearchEngine:
             return self._sequential_search(board, depth, time_limit)
 
         try:
-            best_move, best_score, total_nodes, depth_reached = self.parallel_search.search(
-                board, depth, time_limit
-            )
+            best_move, best_score, total_nodes, depth_reached = self.parallel_search.search(board, depth, time_limit)
             return SearchResult(best_move, best_score, depth_reached, total_nodes, [best_move] if best_move else [])
         except Exception as e:
             print(f"Parallel search error: {e}, falling back to sequential")
@@ -408,22 +748,22 @@ class EnhancedUCIEngine:
         # Initialize opening book
         book_paths = []
         # Look for book files in the books directory
-        books_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'books')
+        books_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "books")
         if os.path.exists(books_dir):
-            book_paths.extend(os.path.join(books_dir, file)
-                            for file in os.listdir(books_dir)
-                            if file.endswith(('.bin', '.txt')))
+            book_paths.extend(
+                os.path.join(books_dir, file) for file in os.listdir(books_dir) if file.endswith((".bin", ".txt"))
+            )
 
         self.opening_book = EnhancedOpeningBook(book_paths)
 
         # UCI options
         self.options = {
-            'Hash': {'type': 'spin', 'default': 128, 'min': 1, 'max': 2048},
-            'Depth': {'type': 'spin', 'default': 8, 'min': 1, 'max': 25},
-            'Time': {'type': 'spin', 'default': 3000, 'min': 100, 'max': 60000},
-            'Threads': {'type': 'spin', 'default': 4, 'min': 1, 'max': 16},
-            'UseNNUE': {'type': 'check', 'default': True},
-            'UseParallel': {'type': 'check', 'default': True}
+            "Hash": {"type": "spin", "default": 128, "min": 1, "max": 2048},
+            "Depth": {"type": "spin", "default": 8, "min": 1, "max": 25},
+            "Time": {"type": "spin", "default": 3000, "min": 100, "max": 60000},
+            "Threads": {"type": "spin", "default": 4, "min": 1, "max": 16},
+            "UseNNUE": {"type": "check", "default": True},
+            "UseParallel": {"type": "check", "default": True},
         }
 
         # Current settings
@@ -450,19 +790,19 @@ class EnhancedUCIEngine:
 
     def handle_command(self, command: str):
         """Handle UCI commands"""
-        if command == 'uci':
+        if command == "uci":
             self.send_uci()
-        elif command == 'isready':
+        elif command == "isready":
             self.send_ready()
-        elif command == 'ucinewgame':
+        elif command == "ucinewgame":
             self.new_game()
-        elif command.startswith('position'):
+        elif command.startswith("position"):
             self.set_position(command)
-        elif command.startswith('go'):
+        elif command.startswith("go"):
             self.go(command)
-        elif command == 'quit':
+        elif command == "quit":
             self.quit()
-        elif command.startswith('setoption'):
+        elif command.startswith("setoption"):
             self.set_option(command)
         else:
             # Unknown command - ignore
@@ -470,20 +810,20 @@ class EnhancedUCIEngine:
 
     def send_uci(self):
         """Send UCI identification"""
-        print('id name EnhancedHomemadeChessEngine')
-        print('id author AI Assistant')
-        print('id version 2.0')
-        print('option name Hash type spin default 128 min 1 max 2048')
-        print('option name Depth type spin default 8 min 1 max 25')
-        print('option name Time type spin default 3000 min 100 max 60000')
-        print('option name Threads type spin default 4 min 1 max 16')
-        print('option name UseNNUE type check default true')
-        print('option name UseParallel type check default true')
-        print('uciok')
+        print("id name EnhancedHomemadeChessEngine")
+        print("id author AI Assistant")
+        print("id version 2.0")
+        print("option name Hash type spin default 128 min 1 max 2048")
+        print("option name Depth type spin default 8 min 1 max 25")
+        print("option name Time type spin default 3000 min 100 max 60000")
+        print("option name Threads type spin default 4 min 1 max 16")
+        print("option name UseNNUE type check default true")
+        print("option name UseParallel type check default true")
+        print("uciok")
 
     def send_ready(self):
         """Send ready status"""
-        print('readyok')
+        print("readyok")
 
     def new_game(self):
         """Start a new game"""
@@ -496,18 +836,18 @@ class EnhancedUCIEngine:
         """Set the position"""
         parts = command.split()
 
-        if parts[1] == 'startpos':
+        if parts[1] == "startpos":
             self.board = chess.Board()
-            if len(parts) > 2 and parts[2] == 'moves':
+            if len(parts) > 2 and parts[2] == "moves":
                 moves = parts[3:]
                 for move_str in moves:
                     move = chess.Move.from_uci(move_str)
                     self.board.push(move)
-        elif parts[1] == 'fen':
+        elif parts[1] == "fen":
             fen_parts = parts[2:8]
-            fen = ' '.join(fen_parts)
+            fen = " ".join(fen_parts)
             self.board = chess.Board(fen)
-            if len(parts) > 8 and parts[8] == 'moves':
+            if len(parts) > 8 and parts[8] == "moves":
                 moves = parts[9:]
                 for move_str in moves:
                     move = chess.Move.from_uci(move_str)
@@ -522,22 +862,19 @@ class EnhancedUCIEngine:
         depth_limit = self.max_depth
 
         for i, part in enumerate(parts):
-            if part == 'wtime' and i + 1 < len(parts):
+            if part == "wtime" and i + 1 < len(parts):
                 if self.board.turn == chess.WHITE:
                     time_limit = int(parts[i + 1]) / 1000.0  # Convert to seconds
-            elif part == 'btime' and i + 1 < len(parts):
+            elif part == "btime" and i + 1 < len(parts):
                 if self.board.turn == chess.BLACK:
                     time_limit = int(parts[i + 1]) / 1000.0  # Convert to seconds
-            elif part == 'depth' and i + 1 < len(parts):
+            elif part == "depth" and i + 1 < len(parts):
                 depth_limit = int(parts[i + 1])
-            elif part == 'movetime' and i + 1 < len(parts):
+            elif part == "movetime" and i + 1 < len(parts):
                 time_limit = int(parts[i + 1]) / 1000.0  # Convert to seconds
 
         # Start search in a separate thread
-        self.search_thread = threading.Thread(
-            target=self._search_thread,
-            args=(depth_limit, time_limit)
-        )
+        self.search_thread = threading.Thread(target=self._search_thread, args=(depth_limit, time_limit))
         self.search_thread.daemon = True
         self.search_thread.start()
 
@@ -548,7 +885,7 @@ class EnhancedUCIEngine:
         # Simple opening book
         opening_move = self._get_opening_move()
         if opening_move:
-            print(f'bestmove {opening_move.uci()}')
+            print(f"bestmove {opening_move.uci()}")
             return
 
         # Perform enhanced search
@@ -557,14 +894,16 @@ class EnhancedUCIEngine:
         # Print search info
         elapsed = time.time() - start_time
         pv_str = " ".join([move.uci() for move in result.pv])
-        print(f'info depth {result.depth} score cp {result.score} nodes {result.nodes} '
-              f'time {int(elapsed * 1000)} pv {pv_str}')
+        print(
+            f"info depth {result.depth} score cp {result.score} nodes {result.nodes} "
+            f"time {int(elapsed * 1000)} pv {pv_str}"
+        )
 
         if result.best_move:
-            print(f'bestmove {result.best_move.uci()}')
+            print(f"bestmove {result.best_move.uci()}")
         else:
             # No legal moves - game over
-            print('bestmove 0000')
+            print("bestmove 0000")
 
     def _get_opening_move(self) -> chess.Move | None:
         """Enhanced opening book"""
@@ -578,9 +917,7 @@ class EnhancedUCIEngine:
             return move
 
         # Fallback to simple opening moves
-        opening_moves = [
-            'e2e4', 'd2d4', 'g1f3', 'c2c4', 'b1c3', 'f2f4', 'g2g3', 'b2b3'
-        ]
+        opening_moves = ["e2e4", "d2d4", "g1f3", "c2c4", "b1c3", "f2f4", "g2g3", "b2b3"]
 
         legal_moves = [move.uci() for move in self.board.legal_moves]
         available_openings = [move for move in opening_moves if move in legal_moves]
@@ -593,26 +930,26 @@ class EnhancedUCIEngine:
     def set_option(self, command: str):
         """Set UCI option"""
         parts = command.split()
-        if len(parts) >= 4 and parts[1] == 'name' and parts[3] == 'value':
+        if len(parts) >= 4 and parts[1] == "name" and parts[3] == "value":
             option_name = parts[2]
             option_value = parts[4]
 
-            if option_name == 'Hash':
+            if option_name == "Hash":
                 self.hash_size = int(option_value)
-            elif option_name == 'Depth':
+            elif option_name == "Depth":
                 self.max_depth = int(option_value)
-            elif option_name == 'Time':
+            elif option_name == "Time":
                 self.time_limit = int(option_value)
-            elif option_name == 'Threads':
+            elif option_name == "Threads":
                 self.num_threads = int(option_value)
                 # Recreate search engine with new thread count
                 self.search_engine = EnhancedSearchEngine(self.evaluator, self.use_parallel, self.num_threads)
-            elif option_name == 'UseNNUE':
-                self.use_nnue = option_value.lower() == 'true'
+            elif option_name == "UseNNUE":
+                self.use_nnue = option_value.lower() == "true"
                 self.evaluator = EnhancedPositionEvaluator(use_nnue=self.use_nnue)
                 self.search_engine = EnhancedSearchEngine(self.evaluator, self.use_parallel, self.num_threads)
-            elif option_name == 'UseParallel':
-                self.use_parallel = option_value.lower() == 'true'
+            elif option_name == "UseParallel":
+                self.use_parallel = option_value.lower() == "true"
                 self.search_engine = EnhancedSearchEngine(self.evaluator, self.use_parallel, self.num_threads)
 
     def quit(self):
@@ -630,5 +967,5 @@ def main():
     engine.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -121,7 +121,7 @@ class Bitboard:
         """Convert bitboard to list of square indices"""
         return list(self.bitscan_forward())
 
-    def from_squares(self, squares: list[int]) -> 'Bitboard':
+    def from_squares(self, squares: list[int]) -> "Bitboard":
         """Create bitboard from list of square indices"""
         result = Bitboard()
         for square in squares:
@@ -235,7 +235,7 @@ class BitboardBoard:
                     return (color, piece_type)
         return None
 
-    def make_move(self, move: chess.Move) -> 'BitboardBoard':
+    def make_move(self, move: chess.Move) -> "BitboardBoard":
         """Make a move and return new board"""
         new_board = BitboardBoard()
 
@@ -286,19 +286,19 @@ class BitboardBoard:
             # Remove pawn and add promoted piece
             new_board.pieces[(color, chess.PAWN)].clear_bit(to_square)
             new_board.pieces[(color, move.promotion)].set_bit(to_square)
-        elif move.uci() == 'e1g1' or move.uci() == 'e8g8':  # Kingside castling
+        elif move.uci() == "e1g1" or move.uci() == "e8g8":  # Kingside castling
             # Move rook
             rook_from = to_square + 1
             rook_to = to_square - 1
             new_board.pieces[(color, chess.ROOK)].clear_bit(rook_from)
             new_board.pieces[(color, chess.ROOK)].set_bit(rook_to)
-        elif move.uci() == 'e1c1' or move.uci() == 'e8c8':  # Queenside castling
+        elif move.uci() == "e1c1" or move.uci() == "e8c8":  # Queenside castling
             # Move rook
             rook_from = to_square - 2
             rook_to = to_square + 1
             new_board.pieces[(color, chess.ROOK)].clear_bit(rook_from)
             new_board.pieces[(color, chess.ROOK)].set_bit(rook_to)
-        elif move.uci().endswith('e.p.'):  # En passant
+        elif move.uci().endswith("e.p."):  # En passant
             # Remove captured pawn
             captured_pawn_square = to_square + (8 if color == chess.WHITE else -8)
             new_board.pieces[(not color, chess.PAWN)].clear_bit(captured_pawn_square)
@@ -373,8 +373,7 @@ class BitboardMoveGenerator:
         """Get king moves from square"""
         return self.king_attacks[square] & ~own_pieces
 
-    def get_pawn_moves(self, square: int, color: chess.Color,
-                      all_pieces: Bitboard, own_pieces: Bitboard) -> Bitboard:
+    def get_pawn_moves(self, square: int, color: chess.Color, all_pieces: Bitboard, own_pieces: Bitboard) -> Bitboard:
         """Get pawn moves from square"""
         moves = Bitboard()
         rank, file = divmod(square, 8)
@@ -446,11 +445,13 @@ class BitboardMoveGenerator:
 
     def get_queen_moves(self, square: int, all_pieces: Bitboard, own_pieces: Bitboard) -> Bitboard:
         """Get queen moves (rook + bishop)"""
-        return (self.get_rook_moves(square, all_pieces, own_pieces) |
-                self.get_bishop_moves(square, all_pieces, own_pieces))
+        return self.get_rook_moves(square, all_pieces, own_pieces) | self.get_bishop_moves(
+            square, all_pieces, own_pieces
+        )
 
-    def _get_ray_attacks(self, square: int, step: int,
-                        occupied: Bitboard, own_pieces: Bitboard, mask: Bitboard) -> Bitboard:
+    def _get_ray_attacks(
+        self, square: int, step: int, occupied: Bitboard, own_pieces: Bitboard, mask: Bitboard
+    ) -> Bitboard:
         """Get ray attacks in a direction"""
         moves = Bitboard()
 
@@ -489,34 +490,31 @@ class BitboardMoveGenerator:
                 for target_square in pawn_moves.to_squares():
                     # Handle promotion
                     if (color == chess.WHITE and target_square < 8) or (color == chess.BLACK and target_square >= 56):
-                        moves.extend(chess.Move(square, target_square, promotion)
-                                   for promotion in [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT])
+                        moves.extend(
+                            chess.Move(square, target_square, promotion)
+                            for promotion in [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT]
+                        )
                     else:
                         moves.append(chess.Move(square, target_square))
 
             elif piece_type == chess.KNIGHT:
                 knight_moves = self.get_knight_moves(square, own_pieces)
-                moves.extend(chess.Move(square, target_square)
-                           for target_square in knight_moves.to_squares())
+                moves.extend(chess.Move(square, target_square) for target_square in knight_moves.to_squares())
 
             elif piece_type == chess.BISHOP:
                 bishop_moves = self.get_bishop_moves(square, board.all_pieces, own_pieces)
-                moves.extend(chess.Move(square, target_square)
-                           for target_square in bishop_moves.to_squares())
+                moves.extend(chess.Move(square, target_square) for target_square in bishop_moves.to_squares())
 
             elif piece_type == chess.ROOK:
                 rook_moves = self.get_rook_moves(square, board.all_pieces, own_pieces)
-                moves.extend(chess.Move(square, target_square)
-                           for target_square in rook_moves.to_squares())
+                moves.extend(chess.Move(square, target_square) for target_square in rook_moves.to_squares())
 
             elif piece_type == chess.QUEEN:
                 queen_moves = self.get_queen_moves(square, board.all_pieces, own_pieces)
-                moves.extend(chess.Move(square, target_square)
-                           for target_square in queen_moves.to_squares())
+                moves.extend(chess.Move(square, target_square) for target_square in queen_moves.to_squares())
 
             elif piece_type == chess.KING:
                 king_moves = self.get_king_moves(square, own_pieces)
-                moves.extend(chess.Move(square, target_square)
-                           for target_square in king_moves.to_squares())
+                moves.extend(chess.Move(square, target_square) for target_square in king_moves.to_squares())
 
         return moves

@@ -132,7 +132,6 @@ class TestParallelSearch(unittest.TestCase):
             self.assertEqual(results[0][0], results[i][0])  # Same move
             self.assertEqual(results[0][1], results[i][1])  # Same score
 
-
     def test_parallel_vs_sequential(self):
         """Test that parallel search is faster than sequential"""
         evaluator = EnhancedPositionEvaluator()
@@ -164,7 +163,6 @@ class TestParallelSearch(unittest.TestCase):
         print(f"Sequential time: {seq_time:.3f}s, Parallel time: {par_time:.3f}s")
 
 
-
 class TestEnhancedEngine(unittest.TestCase):
     """Test the enhanced engine as a whole"""
 
@@ -178,11 +176,10 @@ class TestEnhancedEngine(unittest.TestCase):
         self.assertIsNotNone(engine.board)
 
         # Test UCI options
-        self.assertIn('Hash', engine.options)
-        self.assertIn('Threads', engine.options)
-        self.assertIn('UseNNUE', engine.options)
-        self.assertIn('UseParallel', engine.options)
-
+        self.assertIn("Hash", engine.options)
+        self.assertIn("Threads", engine.options)
+        self.assertIn("UseNNUE", engine.options)
+        self.assertIn("UseParallel", engine.options)
 
     def test_engine_search(self):
         """Test that the engine can search and find moves"""
@@ -195,7 +192,6 @@ class TestEnhancedEngine(unittest.TestCase):
         self.assertIsNotNone(result.best_move)
         self.assertIsInstance(result.score, int)
         self.assertGreater(result.nodes, 0)
-
 
     def test_uci_commands(self):
         """Test UCI command handling"""
@@ -214,7 +210,6 @@ class TestEnhancedEngine(unittest.TestCase):
         # Test position setting
         engine.set_position("position startpos moves e2e4")
         self.assertEqual(engine.board.fen(), "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
-
 
     def test_engine_options(self):
         """Test engine option setting"""
@@ -235,7 +230,6 @@ class TestEnhancedEngine(unittest.TestCase):
 
         engine.set_option("setoption name UseParallel value false")
         self.assertFalse(engine.use_parallel)
-
 
 
 class TestPerformance(unittest.TestCase):
@@ -259,7 +253,6 @@ class TestPerformance(unittest.TestCase):
         self.assertGreater(result.nodes, 100)
 
         print(f"Search completed in {search_time:.3f}s, searched {result.nodes} nodes")
-
 
     def test_memory_usage(self):
         """Test that engine doesn't leak memory"""
@@ -306,7 +299,6 @@ class TestIntegration(unittest.TestCase):
                 self.assertTrue(board.is_legal(result.best_move))
 
 
-
 def run_performance_benchmark():
     """Run a performance benchmark"""
     print("Running Enhanced Engine Performance Benchmark")
@@ -331,13 +323,15 @@ def run_performance_benchmark():
             result = engine.search_engine.find_best_move(board, depth=depth, time_limit=5.0)
             elapsed = time.time() - start_time
 
-            print(f"  Depth {depth}: {result.best_move.uci() if result.best_move else 'None'} "
-                  f"(score: {result.score}, nodes: {result.nodes}, time: {elapsed:.3f}s)")
+            print(
+                f"  Depth {depth}: {result.best_move.uci() if result.best_move else 'None'} "
+                f"(score: {result.score}, nodes: {result.nodes}, time: {elapsed:.3f}s)"
+            )
 
     print("\nBenchmark completed!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Run unit tests
     print("Running Enhanced Engine Tests")
     print("=" * 40)

@@ -14,10 +14,11 @@ import numpy as np
 @dataclass
 class NNUEWeights:
     """NNUE network weights and biases"""
+
     input_weights: np.ndarray  # Shape: (input_features, hidden_size)
     hidden_weights: np.ndarray  # Shape: (hidden_size, 1)
-    input_bias: np.ndarray     # Shape: (hidden_size,)
-    hidden_bias: float         # Scalar
+    input_bias: np.ndarray  # Shape: (hidden_size,)
+    hidden_bias: float  # Scalar
 
 
 class NNUEFeatureExtractor:
@@ -80,7 +81,7 @@ class SimpleNNUE:
             input_weights=np.random.randn(input_size, hidden_size) * 0.1,
             hidden_weights=np.random.randn(hidden_size, 1) * 0.1,
             input_bias=np.zeros(hidden_size),
-            hidden_bias=0.0
+            hidden_bias=0.0,
         )
 
         # Accumulator for efficient updates
@@ -153,21 +154,21 @@ class SimpleNNUE:
 
     def save_weights(self, filename: str):
         """Save NNUE weights to file"""
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             # Write header
-            f.write(struct.pack('IIII', self.input_size, self.hidden_size, 1, 0))
+            f.write(struct.pack("IIII", self.input_size, self.hidden_size, 1, 0))
 
             # Write weights
             self.weights.input_weights.astype(np.float32).tofile(f)
             self.weights.hidden_weights.astype(np.float32).tofile(f)
             self.weights.input_bias.astype(np.float32).tofile(f)
-            f.write(struct.pack('f', self.weights.hidden_bias))
+            f.write(struct.pack("f", self.weights.hidden_bias))
 
     def load_weights(self, filename: str):
         """Load NNUE weights from file"""
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             # Read header
-            header = struct.unpack('IIII', f.read(16))
+            header = struct.unpack("IIII", f.read(16))
             input_size, hidden_size, output_size, _ = header
 
             # Read weights
@@ -180,7 +181,7 @@ class SimpleNNUE:
             input_bias = np.fromfile(f, dtype=np.float32, count=hidden_size)
             self.weights.input_bias = input_bias
 
-            hidden_bias = struct.unpack('f', f.read(4))[0]
+            hidden_bias = struct.unpack("f", f.read(4))[0]
             self.weights.hidden_bias = hidden_bias
 
 
@@ -201,10 +202,7 @@ class HybridEvaluator:
         nnue_score = self.nnue.evaluate(board)
 
         # Combine scores
-        return int(
-            self.traditional_weight * traditional_score +
-            self.nnue_weight * nnue_score
-        )
+        return int(self.traditional_weight * traditional_score + self.nnue_weight * nnue_score)
 
     def _traditional_evaluate(self, board: chess.Board) -> int:
         """Traditional position evaluation"""
@@ -223,7 +221,7 @@ class HybridEvaluator:
             chess.BISHOP: 330,
             chess.ROOK: 500,
             chess.QUEEN: 900,
-            chess.KING: 20000
+            chess.KING: 20000,
         }
 
         # Evaluate material and position
@@ -293,8 +291,9 @@ class HybridEvaluator:
         return center_bonus
 
 
-def train_nnue_on_games(nnue: SimpleNNUE, games: list[list[chess.Board]],
-                       learning_rate: float = 0.01, epochs: int = 10):
+def train_nnue_on_games(
+    nnue: SimpleNNUE, games: list[list[chess.Board]], learning_rate: float = 0.01, epochs: int = 10
+):
     """Train NNUE on a collection of games"""
     for epoch in range(epochs):
         total_loss = 0

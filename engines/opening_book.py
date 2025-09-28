@@ -25,7 +25,7 @@ class OpeningBook:
         """Load opening book from file"""
         try:
             # Try to load as a simple text format first
-            if book_path.endswith('.txt'):
+            if book_path.endswith(".txt"):
                 self._load_text_book(book_path)
             else:
                 # Try to load as binary format
@@ -41,10 +41,10 @@ class OpeningBook:
         with open(book_path) as f:
             for line in f:
                 stripped_line = line.strip()
-                if not stripped_line or stripped_line.startswith('#'):
+                if not stripped_line or stripped_line.startswith("#"):
                     continue
 
-                parts = stripped_line.split('|')
+                parts = stripped_line.split("|")
                 if len(parts) >= 2:
                     fen = parts[0].strip()
                     moves_str = parts[1].strip().split()
@@ -65,7 +65,7 @@ class OpeningBook:
         # This is a simplified binary format loader
         # In practice, you'd need to implement the specific format
         try:
-            with open(book_path, 'rb') as f:
+            with open(book_path, "rb") as f:
                 # Read header
                 header = f.read(16)
                 if len(header) < 16:
@@ -95,12 +95,12 @@ class OpeningBook:
 
         # Try without move counters and castling rights
         fen_parts = fen.split()
-        simplified_fen = ' '.join(fen_parts[:4])  # Remove move counters and castling
+        simplified_fen = " ".join(fen_parts[:4])  # Remove move counters and castling
 
         for book_fen, moves in self.book_moves.items():
             book_parts = book_fen.split()
             if len(book_parts) >= 4:
-                book_simplified = ' '.join(book_parts[:4])
+                book_simplified = " ".join(book_parts[:4])
                 if simplified_fen == book_simplified:
                     return random.choice(moves)
 
@@ -118,27 +118,58 @@ class SimpleOpeningBook:
         self.opening_moves = {
             # Starting position
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1": [
-                "e2e4", "d2d4", "g1f3", "c2c4", "b1c3", "f2f4", "g2g3", "b2b3"
+                "e2e4",
+                "d2d4",
+                "g1f3",
+                "c2c4",
+                "b1c3",
+                "f2f4",
+                "g2g3",
+                "b2b3",
             ],
-
             # After 1.e4
             "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1": [
-                "e7e5", "c7c5", "e7e6", "c7c6", "d7d6", "g8f6", "b8c6", "d7d5"
+                "e7e5",
+                "c7c5",
+                "e7e6",
+                "c7c6",
+                "d7d6",
+                "g8f6",
+                "b8c6",
+                "d7d5",
             ],
-
             # After 1.d4
             "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1": [
-                "d7d5", "g8f6", "e7e6", "c7c5", "f7f5", "d7d6", "g7g6", "b8c6"
+                "d7d5",
+                "g8f6",
+                "e7e6",
+                "c7c5",
+                "f7f5",
+                "d7d6",
+                "g7g6",
+                "b8c6",
             ],
-
             # After 1.Nf3 (different position)
             "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 1 1": [
-                "d2d4", "e2e4", "c2c4", "g2g3", "b2b3", "f2f4", "b1c3", "e2e3"
+                "d2d4",
+                "e2e4",
+                "c2c4",
+                "g2g3",
+                "b2b3",
+                "f2f4",
+                "b1c3",
+                "e2e3",
             ],
-
             # After 1.c4
             "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq c3 0 1": [
-                "e7e5", "c7c5", "g8f6", "e7e6", "d7d5", "c7c6", "g7g6", "b8c6"
+                "e7e5",
+                "c7c5",
+                "g8f6",
+                "e7e6",
+                "d7d5",
+                "c7c6",
+                "g7g6",
+                "b8c6",
             ],
         }
 
@@ -157,12 +188,12 @@ class SimpleOpeningBook:
 
         # Try without move counters
         fen_parts = fen.split()
-        simplified_fen = ' '.join(fen_parts[:4])
+        simplified_fen = " ".join(fen_parts[:4])
 
         for book_fen, moves in self.opening_moves.items():
             book_parts = book_fen.split()
             if len(book_parts) >= 4:
-                book_simplified = ' '.join(book_parts[:4])
+                book_simplified = " ".join(book_parts[:4])
                 if simplified_fen == book_simplified:
                     move_str = random.choice(moves)
                     try:
@@ -224,7 +255,7 @@ rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1|d7d5 g8f6 e7e6 c7c5 
 rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1|d7d5 e2e4 c7c5 g8f6 e7e6 c7c6 d7d6 g7g6
 """
 
-    with open(book_path, 'w') as f:
+    with open(book_path, "w") as f:
         f.write(book_content)
 
 

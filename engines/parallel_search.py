@@ -15,6 +15,7 @@ import chess
 
 class SearchState(Enum):
     """Search thread states"""
+
     IDLE = "idle"
     SEARCHING = "searching"
     STOPPED = "stopped"
@@ -23,6 +24,7 @@ class SearchState(Enum):
 @dataclass
 class SearchTask:
     """Task for search thread"""
+
     board: chess.Board
     depth: int
     alpha: int
@@ -35,6 +37,7 @@ class SearchTask:
 @dataclass
 class SearchResult:
     """Result from search thread"""
+
     score: int
     best_move: chess.Move | None
     depth: int
@@ -46,8 +49,7 @@ class SearchResult:
 class SearchThread:
     """Individual search thread"""
 
-    def __init__(self, thread_id: int, evaluator, shared_tt: dict,
-                 shared_killer_moves: dict, shared_history: dict):
+    def __init__(self, thread_id: int, evaluator, shared_tt: dict, shared_killer_moves: dict, shared_history: dict):
         self.thread_id = thread_id
         self.evaluator = evaluator
         self.shared_tt = shared_tt
@@ -109,9 +111,8 @@ class SearchThread:
         board_hash = hash(task.board.fen())
         if board_hash in self.shared_tt:
             tt_entry = self.shared_tt[board_hash]
-            if tt_entry['depth'] >= task.depth:
-                return SearchResult(tt_entry['score'], tt_entry['move'],
-                                 task.depth, 1, task.task_id, self.thread_id)
+            if tt_entry["depth"] >= task.depth:
+                return SearchResult(tt_entry["score"], tt_entry["move"], task.depth, 1, task.task_id, self.thread_id)
 
         legal_moves = list(task.board.legal_moves)
         if not legal_moves:
@@ -155,17 +156,11 @@ class SearchThread:
                 break
 
         # Store in transposition table
-        self.shared_tt[board_hash] = {
-            'score': best_score,
-            'move': best_move,
-            'depth': task.depth
-        }
+        self.shared_tt[board_hash] = {"score": best_score, "move": best_move, "depth": task.depth}
 
-        return SearchResult(best_score, best_move, task.depth, self.nodes_searched,
-                          task.task_id, self.thread_id)
+        return SearchResult(best_score, best_move, task.depth, self.nodes_searched, task.task_id, self.thread_id)
 
-    def _search_minimax(self, board: chess.Board, depth: int, alpha: int, beta: int,
-                       maximizing: bool) -> int:
+    def _search_minimax(self, board: chess.Board, depth: int, alpha: int, beta: int, maximizing: bool) -> int:
         """Minimax search with alpha-beta pruning"""
         if depth <= 0 or self.stop_requested:
             return self.evaluator.evaluate(board)
@@ -210,8 +205,12 @@ class SearchThread:
 
                 if captured_piece and moving_piece:
                     piece_values = {
-                        chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3,
-                        chess.ROOK: 5, chess.QUEEN: 9, chess.KING: 100
+                        chess.PAWN: 1,
+                        chess.KNIGHT: 3,
+                        chess.BISHOP: 3,
+                        chess.ROOK: 5,
+                        chess.QUEEN: 9,
+                        chess.KING: 100,
                     }
                     score += piece_values[captured_piece.piece_type] * 1000
                     score -= piece_values[moving_piece.piece_type]
@@ -261,8 +260,7 @@ class ParallelSearchEngine:
         # Search threads
         self.search_threads: list[SearchThread] = []
         for i in range(self.num_threads):
-            thread = SearchThread(i, evaluator, self.shared_tt,
-                                self.shared_killer_moves, self.shared_history)
+            thread = SearchThread(i, evaluator, self.shared_tt, self.shared_killer_moves, self.shared_history)
             self.search_threads.append(thread)
 
         # Search state
@@ -296,8 +294,7 @@ class ParallelSearchEngine:
             if thread.state == SearchState.IDLE:
                 # Different depths for each thread
                 thread_depth = max(1, depth - thread_id)
-                task = SearchTask(board, thread_depth, -30000, 30000,
-                                board.turn == chess.WHITE, task_id=task_id)
+                task = SearchTask(board, thread_depth, -30000, 30000, board.turn == chess.WHITE, task_id=task_id)
                 thread.task_queue.put(task)
                 task_id += 1
 
@@ -367,8 +364,9 @@ class IterativeDeepeningParallel:
         self.parallel_engine = ParallelSearchEngine(evaluator, num_threads)
         self.evaluator = evaluator
 
-    def search(self, board: chess.Board, max_depth: int,
-               time_limit: float | None = None) -> tuple[chess.Move, int, int, int]:
+    def search(
+        self, board: chess.Board, max_depth: int, time_limit: float | None = None
+    ) -> tuple[chess.Move, int, int, int]:
         """Iterative deepening search with parallel threads"""
         start_time = time.time()
         best_move = chess.Move.null()  # Initialize with null move
@@ -393,8 +391,10 @@ class IterativeDeepeningParallel:
 
                 # Print search info
                 elapsed = time.time() - start_time
-                print(f"info depth {depth} score cp {score} nodes {total_nodes} "
-                      f"time {int(elapsed * 1000)} pv {move.uci()}")
+                print(
+                    f"info depth {depth} score cp {score} nodes {total_nodes} "
+                    f"time {int(elapsed * 1000)} pv {move.uci()}"
+                )
 
             # Stop if we found a mate
             if abs(score) > 20000:
