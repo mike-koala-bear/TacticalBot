@@ -106,12 +106,13 @@ class FastEnhancedUCIEngine(EnhancedUCIEngine):
         
         # Fallback to simple opening moves
         if len(self.board.move_stack) < 3:
+            import chess
+            import random
             opening_moves = ["e2e4", "d2d4", "g1f3", "c2c4", "b1c3", "f2f4", "g2g3", "b2b3"]
             legal_moves = [move.uci() for move in self.board.legal_moves]
             available_openings = [move for move in opening_moves if move in legal_moves]
             
             if available_openings:
-                import random
                 return chess.Move.from_uci(random.choice(available_openings))
         
         return None

@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""
+Minimal Enhanced Engine - Starts immediately for testing
+"""
+
+import sys
+import os
+import random
+import time
+
+# Add the engines directory to the Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import chess
+
+class MinimalEngine:
+    def __init__(self):
+        self.board = chess.Board()
+        self.running = True
+        self.options = {
+            "Hash": {"type": "spin", "default": 128, "min": 1, "max": 2048},
+            "Depth": {"type": "spin", "default": 8, "min": 1, "max": 25},
+            "Time": {"type": "spin", "default": 3000, "min": 100, "max": 60000},
+            "Threads": {"type": "spin", "default": 4, "min": 1, "max": 16},
+        }
+    
+    def run(self):
+        """Main UCI loop"""
+        while self.running:
+            try:
+                line = input().strip()
+                if not line:
+                    continue
+                
+                if line == "uci":
+                    self.send_uci()
+                elif line == "isready":
+                    self.send_ready()
+                elif line == "ucinewgame":
+                    self.new_game()
+                elif line.startswith("position"):
+                    self.set_position(line)
+                elif line.startswith("go"):
+                    self.go(line)
+                elif line == "quit":
+                    self.quit()
+                    break
+                elif line.startswith("setoption"):
+                    self.set_option(line)
+                else:
+                    # Unknown command - ignore
+                    pass
+            except EOFError:
+                break
+            except Exception as e:
+                print(f"Error: {e}")
+    
+    def send_uci(self):
+        """Send UCI identification"""
+        print("id name MinimalEnhancedEngine")
+        print("id author AI Assistant")
+        print("id version 1.0")
+        print("option name Hash type spin default 128 min 1 max 2048")
+        print("option name Depth type spin default 8 min 1 max 25")
+        print("option name Time type spin default 3000 min 100 max 60000")
+        print("option name Threads type spin default 4 min 1 max 16")
+        print("uciok")
+    
+    def send_ready(self):
+        """Send ready status"""
+        print("readyok")
+    
+    def new_game(self):
+        """Start a new game"""
+        self.board = chess.Board()
+    
+    def set_position(self, command):
+        """Set the position"""
+        parts = command.split()
+        if parts[1] == "startpos":
+            self.board = chess.Board()
+            if len(parts) > 2 and parts[2] == "moves":
+                moves = parts[3:]
+                for move_str in moves:
+                    move = chess.Move.from_uci(move_str)
+                    self.board.push(move)
+        elif parts[1] == "fen":
+            fen_parts = parts[2:8]
+            fen = " ".join(fen_parts)
+            self.board = chess.Board(fen)
+            if len(parts) > 8 and parts[8] == "moves":
+                moves = parts[9:]
+                for move_str in moves:
+                    move = chess.Move.from_uci(move_str)
+                    self.board.push(move)
+    
+    def go(self, command):
+        """Start searching for a move"""
+        # Simple move selection
+        legal_moves = list(self.board.legal_moves)
+        if legal_moves:
+            # Try opening moves first
+            if len(self.board.move_stack) < 3:
+                opening_moves = ["e2e4", "d2d4", "g1f3", "c2c4", "b1c3", "f2f4", "g2g3", "b2b3"]
+                for move in legal_moves:
+                    if move.uci() in opening_moves:
+                        print(f"info depth 1 score cp 0 nodes 1 time 1")
+                        print(f"bestmove {move.uci()}")
+                        return
+            
+            # Random legal move
+            best_move = random.choice(legal_moves)
+            print(f"info depth 1 score cp 0 nodes 1 time 1")
+            print(f"bestmove {best_move.uci()}")
+        else:
+            print("bestmove 0000")
+    
+    def set_option(self, command):
+        """Set UCI option"""
+        # Simple option handling
+        pass
+    
+    def quit(self):
+        """Quit the engine"""
+        self.running = False
+
+def main():
+    """Main entry point"""
+    engine = MinimalEngine()
+    engine.run()
+
+if __name__ == "__main__":
+    main()
